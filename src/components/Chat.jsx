@@ -13,9 +13,9 @@ const Chat = ({ currentUser, receiver }) => {
     receiver_id: receiver.id
   });
 
-
   
   useEffect(() => {
+    
     const fetchMessages = async () => {
       try{
 
@@ -35,7 +35,10 @@ const Chat = ({ currentUser, receiver }) => {
 
   useEffect(() => {
     try {
-      const channel = echo.channel("chat")
+
+      // const channel = echo.channel("chat")
+
+      const channel = echo.private(`chat.${receiver.id}`);
 
       console.log(channel)
 
@@ -80,9 +83,9 @@ const Chat = ({ currentUser, receiver }) => {
         Authorization: `Bearer ${token}`,
     }
     })
-    // const updatedMessages = [...messages, newMessage];
+    const updatedMessages = [...messages, newMessage];
 
-    // setMessages(updatedMessages);
+    setMessages(updatedMessages);
 
     setNewMessage({
       message: null,

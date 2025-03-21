@@ -14,7 +14,6 @@ function Login() {
     try {
       const response = await api.post("/login", formData);
       localStorage.setItem("token", response.data.access_token);
-      // localStorage.setItem("user", JSON.stringify(response.data.userLoggedIn));
       localStorage.setItem(`user_${response.data.userLoggedIn.id}`, JSON.stringify(response.data.userLoggedIn));
 
       Navigate("/user1");
@@ -24,10 +23,6 @@ function Login() {
 
   }
 
-  useEffect(() => {
-    
-  
-  }, [])
   
   return (
     <section className="bg-gray-50">
