@@ -78,25 +78,25 @@ function Contacts({ currentUserId }) {
   const [contacts, setContacts] = useState([]);
   const [showForm, setShowForm] = useState(false); 
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      console.log("current user id:", currentUserId);
+  // useEffect(() => {
+  //   const fetchContacts = async () => {
+  //     console.log("current user id:", currentUserId);
 
-      try {
-        const response = await api.get("/contacts", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem(`user_${currentUserId}`)}`,
-          },
-        });
+  //     try {
+  //       const response = await api.get("/contacts", {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem(`user_${currentUserId}`)}`,
+  //         },
+  //       });
 
-        setContacts(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  //       setContacts(response.data);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
 
-    fetchContacts();
-  }, []);
+  //   fetchContacts();
+  // }, []);
 
   function showFormAddContact() {
     setShowForm(true);
@@ -128,7 +128,7 @@ function Contacts({ currentUserId }) {
             placeholder="search"
           />
         </form>
-        {contacts.map((contact) => (
+        {/* {contacts.map((contact) => (
           <div
             key={contact.id}
             className="flex items-center p-4 hover:bg-violet-600 hover:text-white cursor-pointer"
@@ -143,7 +143,7 @@ function Contacts({ currentUserId }) {
               <p className="text-sm text-gray-500">{contact.lastMessage}</p>
             </div>
           </div>
-        ))}
+        ))} */}
       </div>
     </>
   );

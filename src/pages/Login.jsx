@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom"
 import api from "../services/api.js"
 function Login() {
@@ -12,18 +12,21 @@ function Login() {
   async function handleSubmit(e){
     e.preventDefault();
     try {
+
       const response = await api.post("/login", formData);
+      
       localStorage.setItem("token", response.data.access_token);
       localStorage.setItem(`user_${response.data.userLoggedIn.id}`, JSON.stringify(response.data.userLoggedIn));
 
       Navigate("/user1");
   } catch (error) {
+    console.log('kkkk')
     console.log(error)
   }
 
   }
 
-  
+
   return (
     <section className="bg-gray-50">
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
