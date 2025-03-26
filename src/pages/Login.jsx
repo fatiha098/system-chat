@@ -16,10 +16,24 @@ function Login() {
 
       const response = await api.post("/login", formData);
       
-      localStorage.setItem("token", response.data.access_token);
-      localStorage.setItem(`user_${response.data.userLoggedIn.id}`, JSON.stringify(response.data.userLoggedIn));
+      // localStorage.setItem("token", response.data.access_token);
+      // localStorage.setItem(`user_${response.data.userLoggedIn.id}`, JSON.stringify(response.data.userLoggedIn));
 
-      Navigate(`/user1`);
+      localStorage.setItem(`user_${response.data.userLoggedIn.id}`, JSON.stringify({
+        data: response.data.userLoggedIn,
+        token: response.data.access_token
+      }));
+
+      const loggedInUser = JSON.parse(localStorage.getItem(`user_${response.data.userLoggedIn.id}`));
+
+      if (loggedInUser?.data?.id == 1) {
+          Navigate(`/system-chat/user2`);
+      } 
+      if (loggedInUser?.data?.id == 2) {
+          Navigate(`/system-chat/user1`);
+      }
+
+
 
         
   } catch (error) {

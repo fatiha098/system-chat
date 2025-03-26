@@ -1,92 +1,127 @@
 import { useState, useEffect } from "react";
-import api from "../services/api";
+// import api from "../services/api";
 import { IoMdSend } from "react-icons/io";
 import Contacts from "./Contacts";
-import echo from '../services/echo'
+// import echo from '../services/echo'
+import Echo from 'laravel-echo';
+import Pusher from "pusher-js";
+import axios from "axios";
+
 
 const Chat = ({ currentUser, receiver }) => {
+
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState({
     message: "",
-    sender_id: currentUser.id,
-    receiver_id: receiver.id,
+    sender_id: currentUser.data.id,
+    receiver_id: receiver.data.id,
   });
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await api.get("/messages");
-        setMessages(response.data);
-      } catch (error) {
-        console.error(error);
+  useEffect( () => {
+
+    const pusherClient = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
+      cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+      forceTLS: true,
+      encrypted: true,
+      authEndpoint: `http://localhost:8000/api/broadcasting/auth`,
+      auth: {
+        headers: {
+          'Authorization': `Bearer ${currentUser.token}`,
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
       }
-    };
-
-    fetchMessages();
-
-    console.log({
-      currentUser: currentUser.id,
-      receiver: receiver.id
     });
-    
-     // Subscribe to private channel
-    //  var channel = echo.private(`chat.${receiver.id}`);
 
-    var channel;
 
-     if(currentUser.id === 1){
-      channel = echo.private(`chat.2`);
-      console.log('yes current user is--> :', currentUser.id)
-     }else if(currentUser.id == 2){
-      channel = echo.private(`chat.1`);
-      console.log('yes current user is :', currentUser.id)
-     }else {
-      console.log('none of these')
-     }
+    console.log('token', currentUser.token)
+      const echoInstance = new Echo({
+        broadcaster: 'pusher',
+        key: import.meta.env.VITE_PUSHER_APP_KEY,
+        cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+        forceTLS: true,
+        encrypted: true,
+        authEndpoint: `http://localhost:8000/api/broadcasting/auth`,
+        auth: {
+            headers: {
+                'Authorization': `Bearer ${currentUser.token}`,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }
+      });
 
-     console.log("----------------------")
-     // Listen for new messages
+      //fetch messags 
+      const fetchMessages = async () => {
+        try {
+          const response = await axios.get("http://localhost:8000/api/messages", {
+            headers : {
+              'Authorization': `Bearer ${currentUser.token}`,
+            }
+          });
+          setMessages(response.data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+  
+      fetchMessages();
+  
+      console.log({
+        currentUser: currentUser.data,
+        receiver: receiver.data
+      });
+
+
+      // setup channel 
+    const channel = echoInstance.private(`chat.${receiver.data.id}`);
+
      channel.listen('RealTimeMessage', (data) => {
-
-      console.log('data:', data)
-
+      console.log("message sent : ", data)
        setMessages(prev => [...prev, data.message]);
-
      });
 
-     
-    channel.subscribed(() => {
+     channel.subscribed(() => {
       console.log('Subscribed to channel:', channel);
     }).error((error) => {
       console.error('Subscription error:', error);
     });
- 
-     // Error handling
-     echo.connector.pusher.connection.bind('error', (err) => {
-       console.error("Pusher error:", err);
-     });
- 
 
-     return () => {
-      channel.stopListening('RealTimeMessage');
-      echo.leave(`chat.${receiver.id}`);
+    echoInstance.connector.pusher.connection.bind('error', (err) => {
+      console.error("Pusher error:", err);
+    });
+
+
+    return () => {
+      if (channel) {
+        channel.stopListening('RealTimeMessage');
+        echoInstance.leave(`chat.${receiver.data.id}`);
+      }
+      // echoInstance.disconnect();
+      // pusherClient.disconnect();
     };
-  }, [currentUser.id, receiver.id]);
-
+    
+  }, [currentUser.token, currentUser.data.id, receiver.data.id]);
 
 
 
   const sendMessage = async () => {
     if (newMessage.message.trim() === "") return;
 
-    const token = localStorage.getItem("token");
+    const token = currentUser.token;
 
     // Send the message to the backend
-    await api.post(`/messages`, newMessage, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // await api.post(`/messages`, newMessage, {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+
+      await axios.post("http://localhost:8000/api/messages", newMessage, {
+        headers : {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+    
 
     
     // Update the local state
@@ -96,26 +131,26 @@ const Chat = ({ currentUser, receiver }) => {
     // Clear the input
     setNewMessage({
       message: "",
-      sender_id: currentUser.id,
-      receiver_id: receiver.id,
+      sender_id: currentUser.data.id,
+      receiver_id: receiver.data.id,
     });
   };
 
   return (
     <div className="flex h-screen pb-5">
-      {<Contacts currentUserId={currentUser.id} />}
+      {<Contacts currentUserId={currentUser.data.id} />}
       <div className="flex flex-col p-4 w-2/3 rounded-xl shadow-xl">
-        <h1>chat as {currentUser.name}</h1>
+        <h1>chat as {currentUser.data.name}</h1>
         <h2 className="text-xl p-3 border-b border-gray-300 flex items-center">
           <span className="bg-violet-600 text-white w-8 h-8 flex items-center justify-center rounded-full mr-2">
-            {receiver.name.charAt(0).toUpperCase()}
+            {receiver.data.name.charAt(0).toUpperCase()}
           </span>
-          {receiver.name}
+          {receiver.data.name}
         </h2>
         <div className="p-2 h-full overflow-y-scroll">
           {messages.map((msg, index) => (
-            <div key={index} className={msg.sender_id === currentUser.id ? "text-right" : "text-left"}>
-              <p className={`${msg.sender_id === currentUser.id ? "bg-violet-600 text-white" : "bg-zinc-200 text-stone-900"} px-2 py-1 my-1 inline-block rounded max-w-[300px] break-words`}>
+            <div key={index} className={msg.sender_id === currentUser.data.id ? "text-right" : "text-left"}>
+              <p className={`${msg.sender_id === currentUser.data.id ? "bg-violet-600 text-white" : "bg-zinc-200 text-stone-900"} px-2 py-1 my-1 inline-block rounded max-w-[300px] break-words`}>
                 {msg.message}
               </p>
             </div>
