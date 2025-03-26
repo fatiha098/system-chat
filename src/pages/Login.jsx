@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom"
 import api from "../services/api.js"
+
 function Login() {
 
   const [formData, setFormData] = useState({
@@ -18,7 +19,8 @@ function Login() {
       localStorage.setItem("token", response.data.access_token);
       localStorage.setItem(`user_${response.data.userLoggedIn.id}`, JSON.stringify(response.data.userLoggedIn));
 
-      Navigate("/user1");
+      Navigate(`/user1`);
+
         
   } catch (error) {
     console.log('kkkk')
