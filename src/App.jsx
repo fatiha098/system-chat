@@ -11,9 +11,9 @@ function App() {
     <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/system-chat/register" element={<Register />} />
-          <Route path="/system-chat/user1" element={<User1Chat />} />
-          <Route path="/system-chat/user2" element={<User2Chat />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/user1" element={<User1Chat />} />
+          <Route path="/user2" element={<User2Chat />} />
         </Routes>
     </BrowserRouter>
     

@@ -27,10 +27,10 @@ function Login() {
       const loggedInUser = JSON.parse(localStorage.getItem(`user_${response.data.userLoggedIn.id}`));
 
       if (loggedInUser?.data?.id == 1) {
-          Navigate(`/system-chat/user2`);
+          Navigate(`/user2`);
       } 
       if (loggedInUser?.data?.id == 2) {
-          Navigate(`/system-chat/user1`);
+          Navigate(`/user1`);
       }
 
 
