@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../services/api";
 import { IoMdSend } from "react-icons/io";
 import Contacts from "./Contacts";
-import Pusher from 'pusher-js';
+import echo from '../services/echo'
 
 const Chat = ({ currentUser, receiver }) => {
   const [messages, setMessages] = useState([]);
@@ -23,59 +23,47 @@ const Chat = ({ currentUser, receiver }) => {
     };
 
     fetchMessages();
-  }, []);
 
-  // const pusher = new Pusher('0d0f12e8b8fceffd0879', {
-  //   cluster: 'eu',
-  //   forceTLS: true,
-  // });
+    console.log({
+      currentUser: currentUser.id,
+      receiver: receiver.id
+    });
+    
+     // Subscribe to private channel
+     const channel = echo.private(`chat.${currentUser.id}`);
 
-  const pusher = new Pusher('0d0f12e8b8fceffd0879', {
-    cluster: 'eu',
-    forceTLS: true,
-    authEndpoint: 'http://localhost:8000/api/broadcasting/auth',
-    auth: {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-        Accept: "application/json",
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      },
-    },
-  });
+     // Listen for new messages
+     channel.listen('RealTimeMessage', (data) => {
 
-  console.log('token:', localStorage.getItem('token'));
+      console.log('data:', data)
 
-  useEffect(() => {
+       setMessages(prev => [...prev, data.message]);
 
-    Pusher.logToConsole = true;
+     });
 
-    // const channel = pusher.subscribe('chat');
-
-    const channel = pusher.subscribe(`private-chat.${receiver.id}`);
-
-    channel.bind('pusher_internal:subscription_succeeded', () => {
-      console.log("Subscription succeeded. Ready to trigger events.");
+     
+    channel.subscribed(() => {
+      console.log('Subscribed to channel:', `chat.${currentUser.id}`);
+    }).error((error) => {
+      console.error('Subscription error:', error);
     });
 
-    channel.bind('client-RealTimeMessage', (data) => {
+    //  console.log(channel)
+ 
+     // Error handling
+     echo.connector.pusher.connection.bind('error', (err) => {
+       console.error("Pusher error:", err);
+     });
+ 
 
-      console.log("Data received:", data);
-
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          message: data.message,
-          sender_id: data.sender_id,
-          receiver_id: data.receiver_id,
-        },
-      ]);
-    });
-
-    return () => {
-      pusher.unsubscribe(`private-chat.${receiver.id}`);
-      pusher.disconnect();
+     return () => {
+      channel.stopListening('RealTimeMessage');
+      echo.leave(`chat.${receiver.id}`);
     };
-  }, []);
+  }, [currentUser.id, receiver.id]);
+
+
+
 
   const sendMessage = async () => {
     if (newMessage.message.trim() === "") return;
@@ -89,14 +77,7 @@ const Chat = ({ currentUser, receiver }) => {
       },
     });
 
-    // Trigger the Pusher event
-    const channel = pusher.subscribe(`private-chat.${receiver.id}`);
-    channel.trigger('client-RealTimeMessage', {
-      message: newMessage.message,
-      sender_id: newMessage.sender_id,
-      receiver_id: newMessage.receiver_id,
-    });
-
+    
     // Update the local state
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
@@ -148,10 +129,4 @@ const Chat = ({ currentUser, receiver }) => {
 };
 
 export default Chat;
-
-
-
-
-
-
 

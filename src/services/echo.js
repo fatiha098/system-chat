@@ -7,23 +7,22 @@ const echo = new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY,
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-    forceTLS: true, 
-    // encrypted: true, 
-    // authEndpoint: 'http://localhost:8000/broadcasting/auth',
-    // auth: {
-    //     headers: {
-    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'), // Include CSRF token
-    //     },
-    // },
+    forceTLS: true,
+    encrypted: true,
+    authEndpoint: `http://localhost:8000/api/broadcasting/auth`,
+    auth: {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }
 });
 
-// Log Pusher connection status for debugging
-// echo.connector.pusher.connection.bind('state_change', (states) => {
-//     console.log('Pusher connection state changed:', states.current);
-// });
+window.Echo = echo;
 
-// echo.connector.pusher.connection.bind('error', (error) => {
-//     console.error('Pusher connection error:', error);
-// });
+echo.connector.pusher.connection.bind('state_change', (states) => {
+  console.log('Pusher state changed:', states);
+});
 
 export default echo;

@@ -19,6 +19,7 @@ function Login() {
       localStorage.setItem(`user_${response.data.userLoggedIn.id}`, JSON.stringify(response.data.userLoggedIn));
 
       Navigate("/user1");
+        
   } catch (error) {
     console.log('kkkk')
     console.log(error)
