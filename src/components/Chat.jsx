@@ -30,8 +30,21 @@ const Chat = ({ currentUser, receiver }) => {
     });
     
      // Subscribe to private channel
-     const channel = echo.private(`chat.${currentUser.id}`);
+    //  var channel = echo.private(`chat.${receiver.id}`);
 
+    var channel;
+
+     if(currentUser.id === 1){
+      channel = echo.private(`chat.2`);
+      console.log('yes current user is--> :', currentUser.id)
+     }else if(currentUser.id == 2){
+      channel = echo.private(`chat.1`);
+      console.log('yes current user is :', currentUser.id)
+     }else {
+      console.log('none of these')
+     }
+
+     console.log("----------------------")
      // Listen for new messages
      channel.listen('RealTimeMessage', (data) => {
 
@@ -43,12 +56,10 @@ const Chat = ({ currentUser, receiver }) => {
 
      
     channel.subscribed(() => {
-      console.log('Subscribed to channel:', `chat.${currentUser.id}`);
+      console.log('Subscribed to channel:', channel);
     }).error((error) => {
       console.error('Subscription error:', error);
     });
-
-    //  console.log(channel)
  
      // Error handling
      echo.connector.pusher.connection.bind('error', (err) => {
