@@ -34,8 +34,6 @@ const Chat = ({ currentUser, receiver }) => {
     }
   });
 
-    console.log('token', currentUser.token)
-
       const echoInstance = new Echo({
         broadcaster: 'pusher',
         key: import.meta.env.VITE_PUSHER_APP_KEY,
@@ -67,42 +65,35 @@ const Chat = ({ currentUser, receiver }) => {
       };
   
       fetchMessages();
-  
-      console.log({
-        currentUser: currentUser.data,
-        receiver: receiver?.data
-      });
-
 
       // setup channel 
     const channel = echoInstance.private(`chat.${receiver?.data?.id}`);
 
-     channel.listen('RealTimeMessage', (data) => {
+     channel.listen('.RealTimeMessage', (data) => {
       console.log("message sent : ", data)
        setMessages(prev => [...prev, data.message]);
      });
 
-     channel.subscribed(() => {
-      console.log('Subscribed to channel:', channel);
-    }).error((error) => {
-      console.error('Subscription error:', error);
-    });
+    //  channel.subscribed(() => {
+    //   console.log('Subscribed to channel:', channel);
+    // }).error((error) => {
+    //   console.error('Subscription error:', error);
+    // });
 
-    echoInstance.connector.pusher.connection.bind('error', (err) => {
-      console.error("Pusher error:", err);
-    });
+    // echoInstance.connector.pusher.connection.bind('error', (err) => {
+    //   console.error("Pusher error:", err);
+    // });
 
 
     return () => {
       if (channel) {
-        channel.stopListening('RealTimeMessage');
-        echoInstance.leave(`chat.${receiver.data.id}`);
+        channel.stopListening('.RealTimeMessage');
+        echoInstance.leave(`chat.${receiver?.data?.id}`);
       }
-      // echoInstance.disconnect();
-      // pusherClient.disconnect();
+
     };
     
-  }, [currentUser.token, currentUser.data.id, receiver?.data?.id]);
+  }, [currentUser.token, currentUser.data.id, receiver?.data?.id, messages]);
 
 
 
