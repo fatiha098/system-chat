@@ -14,7 +14,7 @@ const Chat = ({ currentUser, receiver }) => {
   const [newMessage, setNewMessage] = useState({
     message: "",
     sender_id: currentUser.data.id,
-    receiver_id: receiver.?data?.id,
+    receiver_id: receiver?.data?.id,
   });
 
   
