@@ -4,6 +4,7 @@ import { IoMdSend } from "react-icons/io";
 import Contacts from "./Contacts";
 // import echo from '../services/echo'
 import Echo from 'laravel-echo';
+import Pusher from "pusher-js";
 import axios from "axios";
 
 
@@ -13,12 +14,28 @@ const Chat = ({ currentUser, receiver }) => {
   const [newMessage, setNewMessage] = useState({
     message: "",
     sender_id: currentUser.data.id,
-    receiver_id: receiver?.data?.id,
+    receiver_id: receiver.?data?.id,
+  });
+
+  
+  const pusherClient = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: true,
+    encrypted: true,
+    authEndpoint: `http://localhost:8000/api/broadcasting/auth`,
+    auth: {
+      headers: {
+        'Authorization': `Bearer ${currentUser.token}`,
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    }
   });
 
   useEffect( () => {
 
     console.log('token', currentUser.token)
+
       const echoInstance = new Echo({
         broadcaster: 'pusher',
         key: import.meta.env.VITE_PUSHER_APP_KEY,
