@@ -17,7 +17,9 @@ const Chat = ({ currentUser, receiver }) => {
     receiver_id: receiver?.data?.id,
   });
 
-  
+  useEffect( () => {
+
+      
   const pusherClient = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
     forceTLS: true,
@@ -31,8 +33,6 @@ const Chat = ({ currentUser, receiver }) => {
       }
     }
   });
-
-  useEffect( () => {
 
     console.log('token', currentUser.token)
 
