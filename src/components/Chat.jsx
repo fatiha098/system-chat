@@ -4,7 +4,6 @@ import { IoMdSend } from "react-icons/io";
 import Contacts from "./Contacts";
 // import echo from '../services/echo'
 import Echo from 'laravel-echo';
-import Pusher from "pusher-js";
 import axios from "axios";
 
 
@@ -18,21 +17,6 @@ const Chat = ({ currentUser, receiver }) => {
   });
 
   useEffect( () => {
-
-    const pusherClient = new Pusher(import.meta.env.VITE_PUSHER_APP_KEY, {
-      cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-      forceTLS: true,
-      encrypted: true,
-      authEndpoint: `http://localhost:8000/api/broadcasting/auth`,
-      auth: {
-        headers: {
-          'Authorization': `Bearer ${currentUser.token}`,
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      }
-    });
-
 
     console.log('token', currentUser.token)
       const echoInstance = new Echo({
@@ -69,12 +53,12 @@ const Chat = ({ currentUser, receiver }) => {
   
       console.log({
         currentUser: currentUser.data,
-        receiver: receiver.data
+        receiver: receiver?.data
       });
 
 
       // setup channel 
-    const channel = echoInstance.private(`chat.${receiver.data.id}`);
+    const channel = echoInstance.private(`chat.${receiver?.data?.id}`);
 
      channel.listen('RealTimeMessage', (data) => {
       console.log("message sent : ", data)
@@ -101,7 +85,7 @@ const Chat = ({ currentUser, receiver }) => {
       // pusherClient.disconnect();
     };
     
-  }, [currentUser.token, currentUser.data.id, receiver.data.id]);
+  }, [currentUser.token, currentUser.data.id, receiver?.data?.id]);
 
 
 
@@ -132,7 +116,7 @@ const Chat = ({ currentUser, receiver }) => {
     setNewMessage({
       message: "",
       sender_id: currentUser.data.id,
-      receiver_id: receiver.data.id,
+      receiver_id: receiver?.data?.id,
     });
   };
 
@@ -143,9 +127,9 @@ const Chat = ({ currentUser, receiver }) => {
         <h1>chat as {currentUser.data.name}</h1>
         <h2 className="text-xl p-3 border-b border-gray-300 flex items-center">
           <span className="bg-violet-600 text-white w-8 h-8 flex items-center justify-center rounded-full mr-2">
-            {receiver.data.name.charAt(0).toUpperCase()}
+            {receiver?.data?.name.charAt(0).toUpperCase()}
           </span>
-          {receiver.data.name}
+          {receiver?.data?.name}
         </h2>
         <div className="p-2 h-full overflow-y-scroll">
           {messages.map((msg, index) => (
